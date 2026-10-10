@@ -7,7 +7,7 @@ export async function GET() {
   const { supabase } = await exigerAdmin();
   const [{ data: produits }, { data: variantes }] = await Promise.all([
     supabase.from("vue_produits_admin").select("id, sku, nom, branche, categorie, sous_categorie, description, prix_cents, statut, a_verifier, stock_total").order("sku"),
-    supabase.from("variantes").select("sku, produit_id, taille, couleur, stock, seuil_alerte").order("sku"),
+    supabase.from("variantes").select("sku, produit_id, taille, couleur, stock, seuil_alerte, prix_cents").order("sku"),
   ]);
   const skuParId = new Map((produits ?? []).map((p) => [p.id, p]));
 
@@ -36,11 +36,11 @@ export async function GET() {
     { header: "SKU variante", key: "sku", width: 26 }, { header: "SKU produit", key: "psku", width: 12 },
     { header: "Produit", key: "nom", width: 36 }, { header: "Taille", key: "taille", width: 9 },
     { header: "Couleur", key: "couleur", width: 18 }, { header: "Stock", key: "stock", width: 9 },
-    { header: "Seuil d'alerte", key: "seuil_alerte", width: 13 },
+    { header: "Seuil d'alerte", key: "seuil_alerte", width: 13 }, { header: "Prix propre", key: "prix", width: 12 },
   ];
   (variantes ?? []).forEach((v) => {
     const p = skuParId.get(v.produit_id);
-    wv.addRow({ ...v, psku: p?.sku ?? "", nom: p?.nom ?? "" });
+    wv.addRow({ ...v, psku: p?.sku ?? "", nom: p?.nom ?? "", prix: v.prix_cents == null ? "" : v.prix_cents / 100 });
   });
   entete(wv);
 

@@ -18,7 +18,7 @@ export default async function FicheProduit({ params }: { params: Promise<{ id: s
 
   const [{ data: p }, { data: variantes }, { data: images }] = await Promise.all([
     supabase.from("produits").select("*").eq("id", id).maybeSingle(),
-    supabase.from("variantes").select("id, sku, taille, couleur, stock, seuil_alerte, actif").eq("produit_id", id).order("taille").order("couleur"),
+    supabase.from("variantes").select("id, sku, taille, couleur, stock, seuil_alerte, actif, prix_cents").eq("produit_id", id).order("taille").order("couleur"),
     supabase.from("images_produit").select("id, url, alt, position").eq("produit_id", id).order("position"),
   ]);
   if (!p) notFound();

@@ -201,6 +201,18 @@ export async function modifierSeuil(varianteId: string, seuil: number) {
   revalidatePath("/admin/produits", "layout");
 }
 
+export async function modifierPrixVariante(varianteId: string, saisie: string): Promise<Resultat> {
+  try {
+    const { supabase } = await exigerAdmin();
+    const { error } = await supabase.from("variantes").update({ prix_cents: versCents(saisie.trim()) }).eq("id", z.string().uuid().parse(varianteId));
+    if (error) throw error;
+    revalidatePath("/admin/produits", "layout");
+    return { ok: true, message: "Prix mis à jour" };
+  } catch (e) {
+    return { ok: false, message: messageErreur(e) };
+  }
+}
+
 export async function basculerVariante(varianteId: string, actif: boolean) {
   const { supabase } = await exigerAdmin();
   await supabase.from("variantes").update({ actif }).eq("id", varianteId);

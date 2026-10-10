@@ -1,8 +1,10 @@
 "use client";
 import { useState, useTransition } from "react";
-import { ajusterStock, definirStock, modifierSeuil, basculerVariante } from "@/app/admin/(espace)/actions";
+import { ajusterStock, definirStock, modifierSeuil, basculerVariante, modifierPrixVariante } from "@/app/admin/(espace)/actions";
 
-type V = { id: string; sku: string; taille: string; couleur: string; stock: number; seuil_alerte: number; actif: boolean };
+type V = { id: string; sku: string; taille: string; couleur: string; stock: number; seuil_alerte: number; actif: boolean; prix_cents: number | null };
+
+const enSaisie = (c: number | null) => (c == null ? "" : (c / 100).toFixed(2).replace(".", ","));
 
 export default function StockVariantes({ variantes }: { variantes: V[] }) {
   const [liste, setListe] = useState(variantes);
@@ -39,10 +41,10 @@ export default function StockVariantes({ variantes }: { variantes: V[] }) {
       <p className="etiquette">Stock par variante · total <span className="text-or-clair">{total}</span>{enCours && " · enregistrement…"}</p>
       {erreur && <p role="alert" className="text-sm text-[#F0B9AD]">{erreur}</p>}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm border-collapse">
+        <table className="w-full min-w-[680px] text-sm border-collapse">
           <thead>
             <tr className="text-left">
-              {["Taille", "Couleur", "Stock", "Alerte si ≤", "En vente"].map((h) => <th key={h} scope="col" className="etiquette font-medium py-2 pr-3 border-b border-or-doux/25">{h}</th>)}
+              {["Taille", "Couleur", "Stock", "Prix propre", "Alerte si ≤", "En vente"].map((h) => <th key={h} scope="col" className="etiquette font-medium py-2 pr-3 border-b border-or-doux/25">{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -67,6 +69,16 @@ export default function StockVariantes({ variantes }: { variantes: V[] }) {
                 </td>
                 <td className="py-2 pr-3">
                   <input
+                    defaultValue={enSaisie(v.prix_cents)}
+                    placeholder="prix produit"
+                    inputMode="decimal"
+                    aria-label={`Prix propre ${v.taille} ${v.couleur}`}
+                    className="w-24 h-9 px-2 text-right bg-noir border border-or-profond/60 placeholder:text-or-profond/70 placeholder:text-xs"
+                    onBlur={(e) => { if (e.target.value !== enSaisie(v.prix_cents)) demarrer(async () => { const r = await modifierPrixVariante(v.id, e.target.value); if (!r.ok) setErreur(r.message); }); }}
+                  />
+                </td>
+                <td className="py-2 pr-3">
+                  <input
                     defaultValue={v.seuil_alerte}
                     inputMode="numeric"
                     aria-label={`Seuil d'alerte ${v.taille} ${v.couleur}`}
@@ -83,7 +95,7 @@ export default function StockVariantes({ variantes }: { variantes: V[] }) {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-or-profond">Chaque modification est tracée dans l&apos;historique ci-dessous. Tapez un nombre puis Entrée pour un inventaire.</p>
+      <p className="text-xs text-or-profond">Chaque modification est tracée dans l&apos;historique ci-dessous. Tapez un nombre puis Entrée pour un inventaire. « Prix propre » : à remplir seulement si cette variante a un prix différent (ex. taille adulte).</p>
     </div>
   );
 }
