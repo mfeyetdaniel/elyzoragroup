@@ -8,6 +8,7 @@ import "@fontsource/jost/500.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://elysoragroup.netlify.app"),
   title: { default: "ÉLYSORA Group — L'art de sublimer votre quotidien", template: "%s · ÉLYSORA Group" },
   description: "Mode, cheveux et parfums d'intérieur. Livraison partout au Canada et à l'international.",
   icons: { icon: "/monogramme.png", apple: "/monogramme.png" },
