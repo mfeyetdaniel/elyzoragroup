@@ -16,13 +16,11 @@ Site Next.js + Supabase + Stripe, hébergé sur Netlify.
 
 ## Mise en route (à faire une seule fois)
 
-### 1. Créer la base de données dans Supabase
+### 1. Base de données Supabase — ✅ déjà installée
 
-1. Ouvrez votre projet sur **supabase.com** → menu de gauche **SQL Editor** → **New query**.
-2. Copiez **tout** le contenu de `supabase/migrations/0001_schema.sql`, collez-le, cliquez **Run**.
-   ✔ « Success. No rows returned ».
-3. Nouvelle requête : copiez **tout** `supabase/migrations/0002_catalogue_initial.sql` → **Run**.
-   ✔ Les 83 produits et 1 078 variantes du catalogue initial sont créés (en *brouillon*, stock fictif).
+Schéma, sécurité (RLS) et catalogue initial ont été appliqués au projet `lqemkzctyfraxqrrhejq`
+(83 produits, 1 078 variantes, 116 photos, bucket « produits »).
+Pour un nouveau projet : exécuter dans l'ordre les fichiers de `supabase/migrations/` dans le SQL Editor.
 
 ### 2. Sécuriser l'authentification
 
