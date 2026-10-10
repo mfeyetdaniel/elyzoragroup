@@ -7,8 +7,8 @@ Site Next.js + Supabase + Stripe, hébergé sur Netlify.
 | Phase | Contenu | État |
 |---|---|---|
 | 1 | Maquettes | ✅ validées |
-| 2 | Base de données + administration (produits, stock, commandes, 2FA) | ✅ **ce dépôt** |
-| 3 | Boutique publique | à venir |
+| 2 | Base de données + administration (produits, stock, commandes, 2FA) | ✅ |
+| 3 | Boutique publique (accueil, boutique, fiches produit, panier, suivi, pages d'information) | ✅ |
 | 4 | Paiement Stripe + création des commandes | à venir |
 | 5 | Suivi de commande + e-mails automatiques | à venir |
 
@@ -57,6 +57,14 @@ Puis **Deploys → Trigger deploy → Deploy site**.
 Allez sur `https://votre-site.netlify.app/admin` → e-mail + mot de passe → scannez le QR code avec **Google Authenticator** ou **Microsoft Authenticator** → saisissez le code à 6 chiffres. Les fois suivantes, seul le code est demandé après le mot de passe.
 
 ---
+
+## La boutique
+
+- `/` accueil · `/boutique` (filtres univers, catégories, recherche, tri, en stock) · `/produit/<slug>` fiche produit
+- `/panier` panier conservé dans le navigateur ; prix et stock revérifiés auprès de la base à chaque ouverture
+- `/suivi` suivi de commande (n° + e-mail, via la fonction SQL `suivi_commande`)
+- Pages d'information : `/a-propos`, `/contact`, `/faq`, `/livraison-retours`, `/cgv`, `/confidentialite`, `/mentions-legales`
+  → les passages **[À COMPLÉTER]** sont à fournir par ÉLYSORA Group (fichier `src/app/(boutique)/[page]/page.tsx`).
 
 ## L'administration (`/admin`)
 
