@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { exigerAdmin } from "@/lib/admin";
 import { Titre } from "@/components/admin/ui";
 import StatutCommandeForm from "@/components/admin/StatutCommandeForm";
-import { changerStatutCommande, enregistrerNoteCommande } from "../../actions";
+import BoutonRemboursement from "@/components/admin/BoutonRemboursement";
+import { changerStatutCommande, enregistrerNoteCommande, rembourserCommande } from "../../actions";
 import { date, prix, STATUTS_COMMANDE, type StatutCommande } from "@/lib/format";
 
 const ETAPES: StatutCommande[] = ["payee", "en_preparation", "expediee", "livree"];
@@ -11,7 +12,7 @@ const ETAPES: StatutCommande[] = ["payee", "en_preparation", "expediee", "livree
 export default async function DetailCommande({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
-  const { supabase } = await exigerAdmin();
+  const { supabase, admin } = await exigerAdmin();
   const [{ data: c }, { data: lignes }, { data: evts }, { data: notifs }] = await Promise.all([
     supabase.from("commandes").select("*").eq("id", id).maybeSingle(),
     supabase.from("lignes_commande").select("*").eq("commande_id", id),
@@ -27,6 +28,7 @@ export default async function DetailCommande({ params }: { params: Promise<{ id:
       <nav aria-label="Fil d'Ariane" className="etiquette"><Link href="/admin/commandes" className="!text-or-profond">Commandes</Link> ✦ {c.numero}</nav>
       <Titre sous={`${c.nom_client} · ${c.email} · passée le ${date(c.cree_le)}`}>{c.numero}</Titre>
 
+      {c.stock_manquant && <p role="alert" className="border border-erreur text-[#F0B9AD] p-3 text-sm">⚠ Stock insuffisant au moment du paiement pour au moins un article : vérifiez avant d&apos;expédier (remboursement partiel possible depuis Stripe).</p>}
       <ol className="grid grid-cols-4 gap-2" aria-label="Avancement">
         {ETAPES.map((e, i) => (
           <li key={e} className="flex flex-col gap-2">
@@ -73,6 +75,10 @@ export default async function DetailCommande({ params }: { params: Promise<{ id:
             {(notifs ?? []).length === 0 ? <p className="text-or-profond">Les e-mails automatiques arrivent en Phase 5.</p> :
               notifs!.map((n) => <p key={n.id}><span className={n.statut === "envoye" ? "text-[#9FC59A]" : "text-[#F0B9AD]"}>{n.statut === "envoye" ? "✓" : "✗"}</span> {n.type} → {n.destinataire}</p>)}
           </section>
+          {admin.role === "administrateur" && c.stripe_payment_intent && c.statut !== "remboursee" && (
+            <BoutonRemboursement action={rembourserCommande.bind(null, id)} montant={prix(c.total_cents)} />
+          )}
+          {c.stripe_payment_intent && <p className="text-xs text-or-profond break-all">Paiement Stripe : {c.stripe_payment_intent}</p>}
           <form action={enregistrerNoteCommande.bind(null, id)} className="flex flex-col gap-2">
             <label className="etiquette flex flex-col gap-1.5">Note interne
               <textarea name="note" rows={3} className="champ" defaultValue={c.note_interne} />

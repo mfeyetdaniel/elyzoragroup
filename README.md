@@ -9,7 +9,7 @@ Site Next.js + Supabase + Stripe, hébergé sur Netlify.
 | 1 | Maquettes | ✅ validées |
 | 2 | Base de données + administration (produits, stock, commandes, 2FA) | ✅ |
 | 3 | Boutique publique (accueil, boutique, fiches produit, panier, suivi, pages d'information) | ✅ |
-| 4 | Paiement Stripe + création des commandes | à venir |
+| 4 | Paiement Stripe (mode test) + création des commandes + remboursements | ✅ |
 | 5 | Suivi de commande + e-mails automatiques | à venir |
 
 ---
@@ -65,6 +65,21 @@ Allez sur `https://votre-site.netlify.app/admin` → e-mail + mot de passe → s
 - `/suivi` suivi de commande (n° + e-mail, via la fonction SQL `suivi_commande`)
 - Pages d'information : `/a-propos`, `/contact`, `/faq`, `/livraison-retours`, `/cgv`, `/confidentialite`, `/mentions-legales`
   → les passages **[À COMPLÉTER]** sont à fournir par ÉLYSORA Group (fichier `src/app/(boutique)/[page]/page.tsx`).
+
+## Paiement (Stripe)
+
+1. Panier → choix de la zone (Canada / États-Unis / International) → **Payer** → page de paiement **hébergée par Stripe**
+   (aucune donnée de carte ne transite par le site).
+2. Les prix et le stock sont relus dans la base au moment de créer le paiement (`/api/checkout`).
+3. Stripe confirme le paiement au **webhook** `/api/stripe/webhook` (signature vérifiée, traitement idempotent) :
+   création de la commande `ELY-AAAA-NNNN`, des lignes, baisse du stock (historique « vente »).
+4. Remboursement total depuis l'admin (administrateur uniquement) → remise en stock automatique.
+5. **Tarifs de livraison provisoires** dans `src/lib/livraison.ts` (à confirmer).
+6. **Taxes** : activer Stripe Tax (Dashboard › Settings › Tax) puis `STRIPE_TAX_AUTOMATIQUE=true` dans Netlify.
+
+Variables Netlify nécessaires : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`.
+
+Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque.
 
 ## L'administration (`/admin`)
 

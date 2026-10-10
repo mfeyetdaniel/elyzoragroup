@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import ExcelJS from "exceljs";
 import { exigerAdmin } from "@/lib/admin";
-import { supabaseServeur } from "@/lib/supabase/server";
+import { supabaseServeur, supabaseService } from "@/lib/supabase/server";
+import { stripe } from "@/lib/stripe";
 import { versCents, type StatutCommande } from "@/lib/format";
 
 export type Resultat = { ok: boolean; message: string };
@@ -286,9 +287,30 @@ export async function changerStatutCommande(commandeId: string, _p: Resultat | n
     const { error } = await supabase.from("commandes").update(maj).eq("id", commandeId);
     if (error) throw error;
     await supabase.from("evenements_commande").insert({ commande_id: commandeId, statut, message: texte(300).parse(fd.get("message") ?? ""), par: user.id });
+    if (statut === "annulee") await supabaseService().rpc("remettre_en_stock", { p_commande: commandeId, p_type: "annulation" });
     // Phase 5 : envoi automatique de l'e-mail au client ici.
     revalidatePath("/admin/commandes", "layout");
     return { ok: true, message: "Statut mis à jour ✓" };
+  } catch (e) {
+    return { ok: false, message: messageErreur(e) };
+  }
+}
+
+export async function rembourserCommande(commandeId: string): Promise<Resultat> {
+  try {
+    const { supabase, admin, user } = await exigerAdmin();
+    if (admin.role !== "administrateur") throw new Error("Remboursement réservé aux administrateurs");
+    const { data: c } = await supabase.from("commandes").select("id, statut, stripe_payment_intent").eq("id", z.string().uuid().parse(commandeId)).single();
+    if (!c?.stripe_payment_intent) throw new Error("Aucun paiement Stripe associé à cette commande");
+    if (c.statut === "remboursee") throw new Error("Commande déjà remboursée");
+    await stripe().refunds.create({ payment_intent: c.stripe_payment_intent, reason: "requested_by_customer" }, { idempotencyKey: `remb-${c.id}` });
+    const db = supabaseService();
+    await db.from("commandes").update({ statut: "remboursee" }).eq("id", c.id);
+    await db.rpc("remettre_en_stock", { p_commande: c.id, p_type: "retour" });
+    await db.from("evenements_commande").insert({ commande_id: c.id, statut: "remboursee", message: "Remboursement total demandé depuis l'administration", par: user.id });
+    await journal(supabase, "commande.remboursement", c.id);
+    revalidatePath("/admin/commandes", "layout");
+    return { ok: true, message: "Remboursement envoyé à Stripe ✓ — le client le reçoit sous 5 à 10 jours ouvrables." };
   } catch (e) {
     return { ok: false, message: messageErreur(e) };
   }
