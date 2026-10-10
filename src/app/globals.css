@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/* Charte ÉLYSORA — couleurs relevées sur la bannière officielle */
+@theme {
+  --color-noir: #0A0A0A;
+  --color-noir-texture: #131311;
+  --color-noir-profond: #070707;
+  --color-or: #E8CB90;
+  --color-or-clair: #F3D79C;
+  --color-or-doux: #BFAB82;
+  --color-or-profond: #8F7E5B;
+  --color-argent: #CECECE;
+  --color-ivoire: #FAF7F2;
+  --color-succes: #7FA77A;
+  --color-erreur: #C46A5A;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Jost", "Segoe UI", sans-serif;
+}
+
+:root { color-scheme: dark; }
+
+html, body {
+  background: var(--color-noir);
+  color: var(--color-argent);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--color-or); }
+a:hover { color: var(--color-or-clair); }
+
+.btn-or {
+  background: linear-gradient(135deg, #F3D79C, #E8CB90 45%, #BFAB82 75%, #8F7E5B);
+  color: #0A0A0A;
+}
+.btn-or:hover { filter: brightness(1.08); color: #0A0A0A; }
+.btn-or:disabled { opacity: .5; cursor: not-allowed; }
+
+.etiquette {
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--color-or-profond);
+}
+
+.champ {
+  height: 44px;
+  padding: 0 12px;
+  background: var(--color-noir);
+  border: 1px solid var(--color-or-profond);
+  color: var(--color-or-clair);
+  font-size: 15px;
+  border-radius: 2px;
+  width: 100%;
+}
+.champ:focus { outline: 2px solid var(--color-or); outline-offset: 1px; }
+textarea.champ { height: auto; padding: 10px 12px; }
+
+:focus-visible { outline: 2px solid var(--color-or); outline-offset: 2px; }
+
+.filet-or { height: 1px; background: linear-gradient(90deg, #BFAB82, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
